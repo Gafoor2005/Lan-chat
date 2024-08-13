@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>ChatApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        #messages > p {
+            background: linear-gradient(.25turn, transparent 15% ,#f4f4f4ed 60%,transparent);
+            padding: 6px 2em;
+        } 
+        #messages { 
+            font-family: "Inter", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+        body{
+            width: 50%;
+            margin: auto;
+        }
+        form{
+            padding: 2em;
+            display: flex;
+            justify-content: center;
+            gap: 2em;
+            position: sticky;
+            top: 0;
+            background: transparent;
+            backdrop-filter: blur(3px);
+            border-bottom: 2px solid;
+        }
+        .my{
+            color: #86b5ae;
+        }
+        .pink{
+            color: green;
+
+        }
+        .blue{
+            color: blue;
+        }
+        .center{
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="chat">
+    <form id='message-form'>
+        <input name='message' type="text" placeholder="Message" autofocus autocomplete="off" />
+        <button type="submit">Send</button>
+    </form>
+    <p id="messages">
+
+    </p>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let name = ""
+        name = prompt('enter ur name');
+        console.log(name);
+
+        var socket = io();
+
+        // connection with server
+        socket.on('connect', function () {
+            console.log('Connected to Server');
+            socket.emit('newUser', name);
+        });
+        let list = document.getElementById('messages');
+        // message listener from server
+        socket.on('newMessage',
+            function (message) {
+                console.log(message);
+                console.log("gottt message");
+                let para = document.createElement('p');
+                para.classList.add('pink');
+                para.innerHTML = `<b>${message.from} : </b>${message.text}`;
+                list.append(para);
+            });
+        socket.on('newUser',
+            function (user) {
+                let para = document.createElement('p');
+                para.classList.add('blue');
+                para.classList.add('center');
+                para.innerHTML = `new user <b>${user}</b> joind the chat`;
+                list.append(para);
+                list.appe
+            });
+
+        // add event listener to form
+        document.getElementById('message-form')
+            .addEventListener('submit',
+                function (e) {
+                    // prevent the form from submitting
+                    e.preventDefault();
+
+                    let message = {
+                        from: name,
+                        text: document
+                            .querySelector(
+                                'input[name=message]'
+                            ).value
+                    };
+                    // emit message from user side
+                    socket.emit('createMessage',
+                        message);
+                    let para = document.createElement('p');
+                    para.classList.add('my');
+                    para.innerHTML = `<b>${message.from} : </b>${message.text}`;
+                    list.append(para);
+                    document.querySelector('input[name=message]').value = "";
+
+                });
+
+        // when disconnected from server
+        socket.on('disconnect', function () {
+            console.log('Disconnected from server');
+        });
+    </script>
+</body>
+
+</html>
